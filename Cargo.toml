@@ -1,0 +1,22 @@
+[package]
+name = "httparse"
+version = "0.1.0"
+edition = "2021"
+description = "Push parser for HTTP 1.x"
+readme = "README.md"
+license-file = "LICENSE.txt"
+
+[lib]
+name = "httparse"
+crate-type = ["cdylib"]
+
+[dependencies.pyo3]
+version = "^0.17.2"
+features = ["extension-module", "abi3-py37"]
+
+[dependencies.httparse]
+version = "^1.8.0"
+
+[package.metadata.maturin]
+python-source = "python"
+name = "httparse._httparse"
