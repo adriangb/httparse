@@ -8,7 +8,6 @@ if sys.version_info < (3, 8):
 else:
     from typing import Protocol
 
-
 class InvalidChunkSize(Exception):
     pass
 
@@ -36,39 +35,23 @@ class TooManyHeaders(ParsingError):
 class InvalidHTTPVersion(ParsingError):
     pass
 
-
 class Header(Protocol):
     @property
-    def name(self) -> str:
-        ...
-
+    def name(self) -> str: ...
     @property
-    def value(self) -> bytes:
-        ...
-
+    def value(self) -> bytes: ...
 
 class ParsedRequest:
     @property
-    def method(self) -> str:
-        ...
-
+    def method(self) -> str: ...
     @property
-    def path(self) -> str:
-        ...
-
+    def path(self) -> str: ...
     @property
-    def version(self) -> int:
-        ...
-
+    def version(self) -> int: ...
     @property
-    def headers(self) -> Sequence[Header]:
-        ...
-
+    def headers(self) -> Sequence[Header]: ...
     @property
-    def body_start_offset(self) -> int:
-        ...
-
+    def body_start_offset(self) -> int: ...
 
 class RequestParser:
-    def parse(self, __buf: bytes) -> ParsedRequest | None:
-        ...
+    def parse(self, __buf: bytes) -> ParsedRequest | None: ...

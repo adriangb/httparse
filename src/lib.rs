@@ -75,11 +75,16 @@ impl RequestParser {
                     true => {
                         let header_list: Py<PyList> = PyList::new(
                             py,
-                            request.headers.into_iter().map(
-                                |h| {
-                                    Py::new(py, Header {name: PyString::new(py, h.name).into(), value: PyBytes::new(py, h.value).into()}).unwrap()
-                                }
-                            )
+                            request.headers.into_iter().map(|h| {
+                                Py::new(
+                                    py,
+                                    Header {
+                                        name: PyString::new(py, h.name).into(),
+                                        value: PyBytes::new(py, h.value).into(),
+                                    },
+                                )
+                                .unwrap()
+                            }),
                         )
                         .into();
                         Some(ParsedRequest {
