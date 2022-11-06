@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::str;
 
 use pyo3::create_exception;
@@ -74,24 +73,13 @@ impl RequestParser {
             Ok(status) => Ok({
                 match status.is_complete() {
                     true => {
-                        // Combine repeated headers for a consistent and compact representation
-                        let mut header_map: HashMap<&str, Vec<u8>> =
-                            HashMap::with_capacity(request.headers.len());
-                        for header in request.headers {
-                            let vals = header_map.entry(header.name).or_insert_with(Vec::new);
-                            // if there is a value in there, insert a , separator
-                            if vals.len() > 1 {
-                                vals.extend(",".as_bytes());
-                            }
-                            vals.extend(header.value);
-                        }
                         let header_list: Py<PyList> = PyList::new(
                             py,
-                            header_map.into_iter().map(|(name, value)| {
-                                let name = PyString::new(py, name).into();
-                                let value = PyBytes::new(py, &value[..]).into();
-                                Py::new(py, Header { name, value }).unwrap()
-                            }),
+                            request.headers.into_iter().map(
+                                |h| {
+                                    Py::new(py, Header {name: PyString::new(py, h.name).into(), value: PyBytes::new(py, h.value).into()}).unwrap()
+                                }
+                            )
                         )
                         .into();
                         Some(ParsedRequest {
