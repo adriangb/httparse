@@ -2,6 +2,7 @@ use std::str;
 
 use pyo3::create_exception;
 use pyo3::exceptions::PyException;
+use pyo3::intern;
 use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyList, PyString};
 use pyo3::Python;
@@ -79,7 +80,29 @@ impl RequestParser {
                                 Py::new(
                                     py,
                                     Header {
-                                        name: PyString::new(py, h.name).into(),
+                                        name: {
+                                            match h.name {
+                                                "Host" => intern!(py, "Host"),
+                                                "Connection" => intern!(py, "Connection"),
+                                                "Cache-Control" => {
+                                                    intern!(py, "Cache-Control")
+                                                }
+                                                "Accept" => intern!(py, "Accept"),
+                                                "User-Agent" => intern!(py, "User-Agent"),
+                                                "Accept-Encoding" => {
+                                                    intern!(py, "Accept-Encoding")
+                                                }
+                                                "Accept-Language" => {
+                                                    intern!(py, "Accept-Language")
+                                                }
+                                                "Accept-Charset" => {
+                                                    intern!(py, "Accept-Charset")
+                                                }
+                                                "Cookie" => intern!(py, "Cookie"),
+                                                name => PyString::new(py, name),
+                                            }
+                                        }
+                                        .into(),
                                         value: PyBytes::new(py, h.value).into(),
                                     },
                                 )
@@ -87,8 +110,22 @@ impl RequestParser {
                             }),
                         )
                         .into();
+                        let method = match request.method.unwrap() {
+                            "GET" => intern!(py, "GET"),
+                            "POST" => intern!(py, "POST"),
+                            "PUT" => intern!(py, "PUT"),
+                            "PATCH" => intern!(py, "PATCH"),
+                            "DELETE" => intern!(py, "DELETE"),
+                            "HEAD" => intern!(py, "HEAD"),
+                            "OPTIONS" => intern!(py, "OPTIONS"),
+                            "TRACE" => intern!(py, "TRACE"),
+                            "CONNECT" => intern!(py, "CONNECT"),
+                            other => PyString::new(py, other),
+                        }
+                        .into();
+
                         Some(ParsedRequest {
-                            method: PyString::new(py, request.method.unwrap()).into(),
+                            method,
                             path: PyString::new(py, request.path.unwrap()).into(),
                             version: request.version.unwrap(),
                             headers: header_list,
