@@ -3,6 +3,7 @@ PHONY: init build test
 .init:
 	rm -rf .venv
 	python -m venv .venv
+	./.venv/bin/pip install -U pip wheel setuptools
 	./.venv/bin/pip install -r requirements-dev.txt -r requirements-bench.txt
 	./.venv/bin/pre-commit install
 	touch .init
