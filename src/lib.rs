@@ -2,7 +2,6 @@ use std::str;
 
 use pyo3::create_exception;
 use pyo3::exceptions::PyException;
-use pyo3::intern;
 use pyo3::prelude::*;
 use pyo3::types::{PyByteArray, PyBytes, PyList, PyString};
 use pyo3::Python;
@@ -56,6 +55,15 @@ struct ParsedRequest {
     headers: Py<PyList>,
 }
 
+macro_rules! intern_match {
+    ($py:expr, $value: expr, $($interned:expr),+) => {
+        match $value {
+            $($interned => ::pyo3::intern!($py, $interned),)+
+            name => ::pyo3::types::PyString::new($py, name),
+        }
+    };
+}
+
 #[pyclass(module = "httparse._httparse")]
 #[derive(Clone, Debug)]
 struct RequestParser {}
@@ -90,26 +98,19 @@ impl RequestParser {
                                     py,
                                     Header {
                                         name: {
-                                            match h.name {
-                                                "Host" => intern!(py, "Host"),
-                                                "Connection" => intern!(py, "Connection"),
-                                                "Cache-Control" => {
-                                                    intern!(py, "Cache-Control")
-                                                }
-                                                "Accept" => intern!(py, "Accept"),
-                                                "User-Agent" => intern!(py, "User-Agent"),
-                                                "Accept-Encoding" => {
-                                                    intern!(py, "Accept-Encoding")
-                                                }
-                                                "Accept-Language" => {
-                                                    intern!(py, "Accept-Language")
-                                                }
-                                                "Accept-Charset" => {
-                                                    intern!(py, "Accept-Charset")
-                                                }
-                                                "Cookie" => intern!(py, "Cookie"),
-                                                name => PyString::new(py, name),
-                                            }
+                                            intern_match!(
+                                                py,
+                                                h.name,
+                                                "Host",
+                                                "Connection",
+                                                "Cache-Control",
+                                                "Accept",
+                                                "User-Agent",
+                                                "Accept-Encoding",
+                                                "Accept-Language",
+                                                "Accept-Charset",
+                                                "Cookie"
+                                            )
                                         }
                                         .into(),
                                         value: PyBytes::new(py, h.value).into(),
@@ -119,18 +120,19 @@ impl RequestParser {
                             }),
                         )
                         .into();
-                        let method = match request.method.unwrap() {
-                            "GET" => intern!(py, "GET"),
-                            "POST" => intern!(py, "POST"),
-                            "PUT" => intern!(py, "PUT"),
-                            "PATCH" => intern!(py, "PATCH"),
-                            "DELETE" => intern!(py, "DELETE"),
-                            "HEAD" => intern!(py, "HEAD"),
-                            "OPTIONS" => intern!(py, "OPTIONS"),
-                            "TRACE" => intern!(py, "TRACE"),
-                            "CONNECT" => intern!(py, "CONNECT"),
-                            other => PyString::new(py, other),
-                        }
+                        let method = intern_match!(
+                            py,
+                            request.method.unwrap(),
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE",
+                            "HEAD",
+                            "OPTIONS",
+                            "TRACE",
+                            "CONNECT"
+                        )
                         .into();
 
                         Some(ParsedRequest {
