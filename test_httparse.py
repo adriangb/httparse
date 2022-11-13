@@ -72,6 +72,12 @@ def test_parse_partial() -> None:
     assert parsed is not None
 
 
+def test_parse_bytearray() -> None:
+    parser = RequestParser()
+    parsed = parser.parse(bytearray(b"GET /index.html HTTP/1.1\r\nHost: example.domain\r\n\r\n"))
+    assert parsed is not None
+
+
 @pytest.mark.parametrize(
     "buff,exc", [
         (b"GET /index.html HTTP/1.2", InvalidHTTPVersion),

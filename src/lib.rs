@@ -4,7 +4,7 @@ use pyo3::create_exception;
 use pyo3::exceptions::PyException;
 use pyo3::intern;
 use pyo3::prelude::*;
-use pyo3::types::{PyBytes, PyList, PyString};
+use pyo3::types::{PyByteArray, PyBytes, PyList, PyString};
 use pyo3::Python;
 
 create_exception!(_httparse, InvalidChunkSize, PyException);
@@ -60,16 +60,25 @@ struct ParsedRequest {
 #[derive(Clone, Debug)]
 struct RequestParser {}
 
+#[derive(FromPyObject)]
+enum PyData<'a> {
+    Bytes(&'a PyBytes),
+    ByteArray(&'a PyByteArray),
+}
+
 #[pymethods]
 impl RequestParser {
     #[new]
     fn py_new() -> Self {
         RequestParser {}
     }
-    fn parse(&mut self, buff: &PyBytes, py: Python) -> PyResult<Option<ParsedRequest>> {
+    fn parse(&mut self, buff: PyData, py: Python) -> PyResult<Option<ParsedRequest>> {
         let mut headers = [httparse::EMPTY_HEADER; 256];
         let mut request = httparse::Request::new(&mut headers);
-        let maybe_status = request.parse(buff.as_bytes());
+        let maybe_status = request.parse(match buff {
+            PyData::Bytes(d) => d.as_bytes(),
+            PyData::ByteArray(d) => unsafe { d.as_bytes() },
+        });
         match maybe_status {
             Ok(status) => Ok({
                 match status.is_complete() {
