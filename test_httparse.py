@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Dict, Set
+from typing import Dict, Set, Type
 
 import pytest
 
-from httparse import RequestParser, ParsedRequest
+from httparse import RequestParser, ParsedRequest, InvalidHTTPVersion, InvalidHeaderName
 
 
 Headers = Dict[str, Set[bytes]]
@@ -71,6 +71,20 @@ def test_parse_partial() -> None:
 
     assert parsed is not None
 
+
+@pytest.mark.parametrize(
+    "buff,exc", [
+        (b"GET /index.html HTTP/1.2", InvalidHTTPVersion),
+        ("GET /index.html HTTP/1.1\r\nX-Café: example.domain\r\n\r\n".encode(), InvalidHeaderName)
+    ]
+)
+def test_parsing_exceptions(
+    buff: bytes,
+    exc: Type[Exception]
+) -> None:
+    parser = RequestParser()
+    with pytest.raises(exc):
+        parser.parse(buff)
 
 
 
