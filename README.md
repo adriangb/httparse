@@ -23,7 +23,7 @@ assert parsed is not None
 assert parsed.method == "GET"
 assert parsed.path == "/index.html"
 assert parsed.version == 1
-assert parsed.body_start_byte_offset == len(buff)
-headers = [(h.name, h.value.encode()) for h in parsed.headers]
-assert headers == [(b"Host", b"example.com")]
+assert parsed.body_start_offset == len(buff)
+headers = [(h.name.encode(), h.value) for h in parsed.headers]
+assert headers == [(b"Host", b"example.domain")]
 ```
