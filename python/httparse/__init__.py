@@ -8,6 +8,7 @@ from httparse._httparse import (
     InvalidHeaderName,
     InvalidHeaderValue,
     InvalidHTTPVersion,
+    InvalidStatus,
     InvalidToken,
     ParsedRequest,
     ParsingError,
@@ -28,4 +29,5 @@ __all__ = (
     "InvalidToken",
     "TooManyHeaders",
     "InvalidHTTPVersion",
+    "InvalidStatus",
 )

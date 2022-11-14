@@ -35,6 +35,9 @@ class TooManyHeaders(ParsingError):
 class InvalidHTTPVersion(ParsingError):
     pass
 
+class InvalidStatus(ParsingError):
+    pass
+
 class Header(Protocol):
     @property
     def name(self) -> str: ...
